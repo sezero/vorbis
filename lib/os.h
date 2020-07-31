@@ -32,6 +32,8 @@
 #    define STIN static __inline__
 #  elif defined(_WIN32)
 #    define STIN static __inline
+#  elif defined __WATCOMC__
+#    define STIN static __inline
 #  else
 #    define STIN static
 #  endif
@@ -49,6 +51,21 @@
 #  define rint(x)   (floor((x)+0.5f))
 #  define NO_FLOAT_MATH_LIB
 #  define FAST_HYPOT(a, b) sqrt((a)*(a) + (b)*(b))
+#endif
+
+#ifdef __WATCOMC__
+#undef rint
+extern double rint(double);
+#pragma aux rint parm [8087] value [8087] = "frndint";
+#endif
+
+#ifdef __EMX__
+# define rint vorbis_rint
+static __inline double vorbis_rint (double x) {
+  double retval;
+  __asm__ __volatile__ ("frndint;": "=t" (retval) : "0" (x));
+  return retval;
+}
 #endif
 
 #if defined(__SYMBIAN32__) && defined(__WINS__)
@@ -115,6 +132,32 @@ static inline int vorbis_ftoi(double f){  /* yes, double!  Otherwise,
   return(i);
 }
 #endif /* Special i386 GCC implementation */
+
+
+/* Watcom inline assembly. */
+#if defined(__WATCOMC__)
+#  define VORBIS_FPU_CONTROL
+
+typedef ogg_int16_t vorbis_fpu_control;
+
+__inline int vorbis_ftoi(double);
+#pragma aux vorbis_ftoi = \
+    "push  eax" \
+    "fistp dword ptr [esp]" \
+    "pop   eax" \
+    parm [8087] \
+    value [eax] \
+    modify exact [eax];
+
+static __inline void vorbis_fpu_setround(vorbis_fpu_control *fpu){
+  (void)fpu;
+}
+
+static __inline void vorbis_fpu_restore(vorbis_fpu_control fpu){
+  (void)fpu;
+}
+
+#endif /* Watcom implementation */
 
 
 /* MSVC inline assembly. 32 bit only; inline ASM isn't implemented in the
