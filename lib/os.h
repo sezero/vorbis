@@ -38,10 +38,6 @@
 #    define STIN static
 #  endif
 
-#ifdef DJGPP
-#  define rint(x)   (floor((x)+0.5f))
-#endif
-
 #ifndef M_PI
 #  define M_PI (3.1415926536f)
 #endif
@@ -59,7 +55,7 @@ extern double rint(double);
 #pragma aux rint parm [8087] value [8087] = "frndint";
 #endif
 
-#ifdef __EMX__
+#if defined(__EMX__) || defined(__DJGPP__)
 # define rint vorbis_rint
 static __inline double vorbis_rint (double x) {
   double retval;
