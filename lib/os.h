@@ -68,6 +68,19 @@ static __inline double vorbis_rint (double x) {
 }
 #endif
 
+#if defined(__AROS__)
+# ifdef __i386__
+#  define rint vorbis_rint
+static __inline double vorbis_rint (double x) {
+  double retval;
+  __asm__ __volatile__ ("frndint;": "=t" (retval) : "0" (x));
+  return retval;
+}
+# else
+#  define rint(x)   (floor((x)+0.5f))
+# endif
+#endif
+
 #if defined(__SYMBIAN32__) && defined(__WINS__)
 void *_alloca(size_t size);
 #  define alloca _alloca
