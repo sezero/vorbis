@@ -96,6 +96,13 @@ void *_alloca(size_t size);
 #  include <alloca.h>
 #endif
 
+#if defined(__AROS__) && defined(__GNUC__)
+/* bypass __alloca_get_stack_limit() call in alloca.h
+  from old AROS SDKs, directly use __builtin_alloca(). */
+#undef alloca
+#define alloca __builtin_alloca
+#endif
+
 #ifdef USE_MEMORY_H
 #  include <memory.h>
 #endif
